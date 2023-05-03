@@ -1,0 +1,12 @@
+avrdude -p attiny2313 -c usbtiny -n -P usb -U flash:r:flash.hex:i
+avrdude -p attiny2313 -c usbtiny -n -P usb -U eeprom:r:eedump.hex:i
+avrdude -p attiny2313 -c usbtiny -n -P usb -U hfuse:r:hfdump.hex:i
+avrdude -p attiny2313 -c usbtiny -n -P usb -U lfuse:r:lfdump.hex:i
+echo "flash"
+cat flash.hex
+echo "eeprom"
+cat eedump.hex
+echo "low fuse"
+cat lfdump.hex
+echo "high fuse"
+cat hfdump.hex

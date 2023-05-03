@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "Sphere")(type "KiCad")(uri "/Users/andrew.shapton/MyProjects/sphere/partslibraries/Sphere.kicad_sym")(options "")(descr "KiCAD Library for SPHERE 1 CPU/2"))
+)
