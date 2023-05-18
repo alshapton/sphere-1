@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "RS232")(type "KiCad")(uri "/Users/andrew.shapton/MyProjects/sphere/images/schematic")(options "")(descr ""))
+)
