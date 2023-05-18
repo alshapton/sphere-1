@@ -1,0 +1,7 @@
+avrdude -p attiny2313 -c usbtiny -n -P usb -U eeprom:r:eedump.hex:i
+cat eedump.hex
+avrdude -p attiny2313 -c usbtiny  -P usb -e
+avrdude -p attiny2313 -c usbtiny  -P usb -D -U flash:w:PS-2keyboardv3.0.hex:i
+avrdude -p attiny2313 -c usbtiny  -P usb -D -U eeprom:w:eedump.hex:i
+avrdude -p attiny2313 -c usbtiny  -P usb -U hfuse:v:AVRPS2hf.hex:i
+avrdude -p attiny2313 -c usbtiny  -P usb -U lfuse:v:AVRPS2lf.hex:i

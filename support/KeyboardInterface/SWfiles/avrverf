@@ -1,0 +1,4 @@
+avrdude -p attiny2313 -c usbtiny -n -P usb -U flash:v:AVRPS2_keyboard_v2.hex:i
+avrdude -p attiny2313 -c usbtiny -n -P usb -U eeprom:v:eedump.hex:i
+avrdude -p attiny2313 -c usbtiny -n -P usb -U hfuse:v:AVRPS2hf.hex:i
+avrdude -p attiny2313 -c usbtiny -n -P usb -U lfuse:v:AVRPS2lf.hex:i

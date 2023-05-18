@@ -1,0 +1,8 @@
+1	5	Cap-small		C2-.1uF	C4-.1uF	C3-.1uF	C1-.1uF	C5-.1uF	
+2	2	dip-16-oval		MAX202	KEYBOARD	
+3	1	dip-20-oval		2313	
+4	1	electo-cap		C6-47uF	
+5	1	jumper		U2	
+6	2	molex-KK-2		A2	CR	
+7	4	mounting hole		U56	U56	U56	U56	
+8	1	www.willegal.net		U1	
