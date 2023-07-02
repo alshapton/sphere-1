@@ -1,0 +1,187 @@
+#!/bin/sh
+
+# 
+#  Program:	convertROM
+#
+#  Author:	Andrew Shapton
+#
+#  Date:	24-MAY-2023
+#
+#  Version:	1.1
+#
+#  Revision History
+#
+#	24-MAY-2023	1.0	Initial Version
+#	20-JUN-2023	1.1	Included Base address option
+
+#
+# Takes a Sphere ROM binary file and converts it into a form which can be imported into the SPHERE-Firmware emulator
+#
+# Parameters:	-i/--input	 <ROM filename>				Mandatory
+#               -o/--output	 <ROM Image header output filename>	Optional
+#               -b/--base	 <Base Address in hex e.g. 0xfe00>	Optional (default 0xfe00)
+#               -h/--help	 Print this Help.
+#               -l/--license	 Print the license notification (MIT).
+#               -v/--version	 Print software version.
+
+VERSION="v1.1"
+
+# Set defaults
+INPUTIMAGE="<NONE>"
+OUTPUTIMAGE="<NONE>"
+BASE="0xfe00"
+
+TODAY=`date`
+MITLICENSE=$(cat <<EOF
+\n
+MIT LICENSE                                                                   \n
+\n
+Copyright (c) 2023 Andrew Shapton<alshapton@gmail.com>                        \n
+                                                                              \n
+Permission is hereby granted, free of charge, to any person obtaining a copy  \n
+of this software and associated documentation files (the "Software"), to deal \n
+in the Software without restriction, including without limitation the rights  \n
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell     \n
+copies of the Software, and to permit persons to whom the Software is         \n
+furnished to do so, subject to the following conditions:                      \n
+                                                                              \n
+The above copyright notice and this permission notice shall be included in all\n
+copies or substantial portions of the Software.                               \n
+                                                                              \n
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR    \n
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,      \n
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE   \n
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER        \n
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, \n
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE \n
+SOFTWARE.                                                                     \n\n
+EOF
+)
+
+
+
+############################################################
+# Print License Function                                   #
+############################################################
+License()
+{
+   # Display License Information
+   echo $MITLICENSE
+}
+
+
+############################################################
+# writeOut Function                                        #
+############################################################
+writeOut()
+{
+echo $BASE
+   # Write out to outputfile
+   echo "
+/// ROM image for : $INPUTIMAGE
+/// Date          : $TODAY
+///
+/// Created by convertROM $VERSION
+static const PROGMEM int BASE = $BASE ;
+static const PROGMEM int ROM[] = {" > $INPUTIMAGE.stage3.$PID
+   
+   # Write intermediate stage
+   cat $INPUTIMAGE.stage2.$PID >> $INPUTIMAGE.stage3.$PID
+
+   # Clean up
+   echo "};" >> $INPUTIMAGE.stage3.$PIDA
+   #if [[ $OUTPUTIMAGE == "<NONE>"]]
+   #fi
+   mv $INPUTIMAGE.stage3.$PID $OUTPUTIMAGE
+   rm $INPUTIMAGE.stage?.$PID
+}
+############################################################
+# Version Function                                         #
+############################################################
+Version()
+{
+   # Display Version Information
+   echo "convertROM Version: $VERSION"
+}
+
+
+############################################################
+# Help Function                                            #
+############################################################
+Help()
+{
+   # Display Help
+   echo "Takes a Sphere ROM binary file and converts it into a form which can be imported into the SPHERE-Firmware emulator"
+   echo
+   echo "Syntax: $0  [-b|i|l|h|o|v]"
+   echo "options:"
+   echo "-b     <Base Address - default 0xfe00>"
+   echo "-h     Print this Help."
+   echo "-i     <ROM Image input filename>."
+   echo "-l     Print the license notification (MIT)."
+   echo "-o     <ROM Image header output filename>."
+   echo "-v     Print software version."
+   echo
+}
+
+############################################################
+# Main Program                                             #
+############################################################
+if [[ $# -eq 0 ]]; then
+    echo "No parameters supplied.\n" 
+    Help
+    exit 2
+fi
+
+for option in "$@"; do
+   case "$option" in
+      -b|--base) # Capture Base address
+         BASE=$2
+         echo $BASE
+	 shift
+	 shift
+	 ;;
+      -h|--help) # display Help
+         Help
+         shift
+	 ;;
+      -i|--input) # Supply ROM image filename
+         INPUTIMAGE=$2
+	 shift
+	 shift
+  	 ;;
+      -l|--license) # Show License
+         License
+         shift
+	 ;;
+      -o|--output) # Set output ROM image filename
+         OUTPUTIMAGE=$2
+         shift
+	 shift
+	 ;;
+      -v|--version) # Show Program Version
+         Version
+         shift
+	 ;;
+      -*|--*) # Invalid option
+         echo "Error: Invalid option"
+         exit;;
+   esac
+done
+
+if [[ "$INPUTIMAGE" == "<NONE>" ]]; then
+    echo "No ROM Image file supplied"
+    exit
+fi
+
+PID=$$
+# Dump the file and convert to decimal, formatting first stage with commas between each digit
+od -t u1 $INPUTIMAGE | awk '{print $2 "," $3 "," $4 "," $5 "," $6 "," $7 "," $8 "," $9 "," $10 "," $11 "," $12 "," $13 "," $14  "," $15 "," $16 "," $17 "," }' | grep -v ,,, > $INPUTIMAGE.stage1.$PID
+
+# Remove the last comma from the file
+sed '$ s/.$//' $INPUTIMAGE.stage1.$PID > $INPUTIMAGE.stage2.$PID
+
+writeOut
+
+
+

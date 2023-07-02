@@ -1,0 +1,863 @@
+
+SB-Cross Assembler version 3.03.07
+Please visit www.sbprojects.net for a complete description.
+
+Assembling....
+
+Pass one
+Loaded 6800 overlay version 3.01.03
+
+Pass two
+0000-                  1      ;
+0000-                  2      ;      DIRECTIVES FOR ASSEMBLY FOR SBASM3
+0000-                  3      ;
+0000-                  4              .CR 6800               ; LOAD MC6800 CROSS OVERLAY
+0000-                  5              .TF TARGET.HEX,HEX     ; OUTPUT FILE TO TARGET.BIN IN BINARY FORMAT
+FB00-                  6              .OR $FB00              ; START OF ASSEMBLY ADDRESS
+FB00-                  7
+FB00-                  8      ;      SBASM3 ALSO NEEDED EQU CHANGING TO .EQU
+FB00-                  9      ;                         COMMENTS CHANGING FROM * TO ;
+FB00-                 10      ;                         LABELS AND CONSTANTS WITH A PLUS SIGN NEED RENAMING:
+FB00-                 11      ;                              TMP+1  -> TMPAND1
+FB00-                 12      ;                              TMP1+1 -> TMP1AND1
+FB00-                 13      ;                              NUM+1  -> NUMAND1
+FB00-                 14      ;                              CPSV+1 -> CPSVAND1
+FB00-                 15      ;                              CSRP+1 -> CSRPAND1
+FB00-                 16      ;                         CHANGED DS DIRECTIVE TO .DC
+FB00-                 17      ;
+FB00-                 18      ;
+FB00-                 19      ; PIE TEXT EDITOR V1.1
+FB00-                 20      ; TOM CROSLEY
+FB00-                 21      ;
+FB00-                 22      ; FOR SPHERE WITH PDS
+FB00-                 23      ; V3N FIRMWARE
+FB00-                 24      ;
+FB00-                 25      ; RECOVERED FROM TAPE
+FB00-                 26      ; 11/2022 BEN ZOTTO
+FB00-                 27      ;
+FB00-                 28      ;
+FB00-                 29      ; REFORMATTED TO WORK WITH SBASM3
+FB00-                 30      ; 06/2023 ANDREW SHAPTON
+FB00-                 31      ;
+FB00-                 32      ; MODIFIED ORIGINAL BEGINS BELOW
+FB00-                 33      ;
+FB00-                 34
+0000-                 35      TMP         .EQU    0
+0001-                 36      TMPAND1     .EQU    1
+0002-                 37      TMP1        .EQU    2
+0003-                 38      TMP1AND1    .EQU    3
+0004-                 39      NUM         .EQU    4
+0005-                 40      NUMAND1     .EQU    5
+0006-                 41      ARA         .EQU    6
+0006-                 42      NFOUND      .EQU    6
+0007-                 43      AR0         .EQU    7
+000C-                 44      BUFADR      .EQU    $C
+000E-                 45      BUFEND      .EQU    $E
+0010-                 46      INSFLG      .EQU    $10
+0013-                 47      TAB         .EQU    $13
+0016-                 48      DSTADR      .EQU    $16
+0018-                 49      CPSAVE      .EQU    $18
+0019-                 50      CPSVAND1    .EQU    $19
+001C-                 51      CSRPTR      .EQU    $1C
+001D-                 52      CSRPAND1    .EQU    $1D
+0020-                 53      BUFFLO      .EQU    $20
+0022-                 54      BUFFHI      .EQU    $22
+0024-                 55      SCNPTR      .EQU    $24
+0032-                 56      EDITF       .EQU    $32
+FB00-                 57      ;
+FB00-                 58      ; EDITOR IS SELF-RELOCATING AND
+FB00-                 59      ; MUST BE ASSEMBLED AT 0
+FB00-                 60      ; ORG 0
+FB00-                 61      ; MOVED TO FRONT OF PROGRAM AS REQUIRED BY SBASM3
+FB00-                 62      ; DO NOT MOVE NEXT 3 INSTRS!
+FB00-20 04            63 ( 4) EDIT    BRA     EDIT1  ;NEW BUFFER
+FB02-20 0A            64 ( 4) REDIT   BRA     REDIT1 ;OLD BUFFER
+FB04-8D 35            65 ( 8) GENORG  BSR     TBLRET ;GEN TABLE ORG
+FB06-                 66      ;
+FB06-                 67      ; DS 2 'INVALD' 0
+FB06-                 68      ; DS 2'TABLFT' CTRL-A
+FB06-                 69      ; DS 2'BOTTOM'      B
+FB06-                 70      ; DS 2'ADD32X'      C
+FB06-                 71      ; DS 2'UPHOME'      D
+FB06-                 72      ; DS 2'SUB32X'      E
+FB06-                 73      ; DS 2'RTARRO'      F
+FB06-                 74      ; DS 2'TABRGT'      G
+FB06-                 75      ; DS 2'DESBKS'      H
+FB06-                 76      ; DS 2'INSERT'      I
+FB06-                 77      ; DS 2'GOBBLE'      J
+FB06-                 78      ; DS 2'DELETE'      K
+FB06-                 79      ; DS 2'CLEARL'      L
+FB06-                 80      ; DS 2'CRLFXX'      M
+FB06-                 81      ; DS 2'CLOSET'      N
+FB06-                 82      ; DS 2'INSOFF'      O
+FB06-                 83      ; DS 2'CHRINS'      P
+FB06-                 84      ; DS 2'SCHBCK'      Q
+FB06-                 85      ; DS 2'UPPAGE'      R
+FB06-                 86      ; DS 2'LFARRO'      S
+FB06-                 87      ; DS 2'GOTONN'      T
+FB06-                 88      ; DS 2'APPEND'      U
+FB06-                 89      ; DS 2'DNPAGE'      V
+FB06-                 90      ; DS 2'TABUPX'      W
+FB06-                 91      ; DS 2'TABDWN'      X
+FB06-                 92      ; DS 2'BOTOUT'      Y
+FB06-                 93      ; DS 2'SCHFWD'      Z
+FB06-                 94      ; DS 2'ESCAPE' <ESCAPE>
+FB06-                 95      ; DS 2'INVALD' CTRL-\
+FB06-                 96      ; DS 2'SETTAB'      ]
+FB06-                 97      ; DS 2'HOMLIN'      ^
+FB06-                 98      ; DS 2'LFTJST'      _
+FB06-                 99      ;
+FB06-                100             .TW 'INVALD' ; 0
+FB06-                101             .TW 'TABLFT' ; CTRL-A
+FB06-                102             .TW 'BOTTOM' ; B
+FB06-                103             .TW 'ADD32X' ; C
+FB06-                104             .TW 'UPHOME' ; D
+FB06-                105             .TW 'SUB32X' ; E
+FB06-                106             .TW 'RTARRO' ; F
+FB06-                107             .TW 'TABRGT' ; G
+FB06-                108             .TW 'DESBKS' ; H
+FB06-                109             .TW 'INSERT' ; I
+FB06-                110             .TW 'GOBBLE' ; J
+FB06-                111             .TW 'DELETE' ; K
+FB06-                112             .TW 'CLEARL' ; L
+FB06-                113             .TW 'CRLFXX' ; M
+FB06-                114             .TW 'CLOSET' ; N
+FB06-                115             .TW 'INSOFF' ; O
+FB06-                116             .TW 'CHRINS' ; P
+FB06-                117             .TW 'SCHBCK' ; Q
+FB06-                118             .TW 'UPPAGE' ; R
+FB06-                119             .TW 'LFARRO' ; S
+FB06-                120             .TW 'GOTONN' ; T
+FB06-                121             .TW 'APPEND' ; U
+FB06-                122             .TW 'DNPAGE' ; V
+FB06-                123             .TW 'TABUPX' ; W
+FB06-                124             .TW 'TABDWN' ; X
+FB06-                125             .TW 'BOTOUT' ; Y
+FB06-                126             .TW 'SCHFWD' ; Z
+FB06-                127             .TW 'ESCAPE' ; <ESCAPE>
+FB06-                128             .TW 'INVALD' ; CTRL-\
+FB06-                129             .TW 'SETTAB' ; ]
+FB06-                130             .TW 'HOMLIN' ; ^
+FB06-                131             .TW 'LFTJST' ; _
+FB06-                132      ;
+FB06-                133
+FB06-DE 0C           134 ( 4) EDIT1 LDX BUFADR STRT OF LO BUF
+FB08-DF 20           135 ( 5)  STX BUFFLO END+1 OF LOW BUF
+FB0A-DE 0E           136 ( 4)  LDX BUFEND STRT-1 OF HIGH BUF
+FB0C-DF 22           137 ( 5)  STX BUFFHI END OF HIGH BUF
+FB0E-                138      ;
+FB0E-BD FC 37        139 ( 9) REDIT1 JSR UPHOME
+FB11-BD FC 3D        140 ( 9)  JSR CLEAR SCREEN
+FB14-4F              141 ( 2)  CLRA
+FB15-97 10           142 ( 4)  STAA INSFLG INS MODE OFF
+FB17-B7 01 10        143 ( 5)  STAA SRCHBF NULL STRING
+FB1A-4C              144 ( 2)  INCA
+FB1B-97 32           145 ( 4)  STAA EDITF
+FB1D-86 00           146 ( 2)  LDAA =8 DEFAULT TABS = 8
+FB1F-97 13           147 ( 4)  STAA TAB
+FB21-DE 1C           148 ( 4)  LDX CSRPTR
+FB23-DF 24           149 ( 5)  STX SCNPTR
+FB25-                150      ;
+FB25-8D 69           151 ( 8) RDLP BSR ENDCR PUT CR IN COL 32
+FB27-FE FC 64        152 ( 5)  LDX KBDPIA
+FB2A-A6 00           153 ( 5)  LDAA 0,X CLEAR OUT INPUT BUF
+FB2C-BD FC 4A        154 ( 9)  JSR GETCHR
+FB2F-81 00           155 ( 2)  CMPA =$20
+FB31-2C 6B           156 ( 4)  BGE REGCHR
+FB33-                157      ; CONTROL CHAR (EDITOR COMMAND)
+FB33-CE 00 00        158 ( 3)  LDX =1 DEFAULT ARGUMENT
+FB36-DF 04           159 ( 5)  STX NUM
+FB38-48              160 ( 2)  ASLA
+FB39-20 C9           161 ( 4) RL10 BRA GENORG GET TABLE ORG
+FB3B-30              162 ( 4) TBLRET TSX
+FB3C-EE 00           163 ( 6)  LDX 0,X
+FB3E-09              164 ( 4)  DEX
+FB3F-09              165 ( 4)  DEX
+FB40-09              166 ( 4)  DEX
+FB41-09              167 ( 4)  DEX
+FB42-09              168 ( 4)  DEX
+FB43-09              169 ( 4)  DEX
+FB44-DF 02           170 ( 5)  STX TMP1 SAVE ABS PROG ORG
+FB46-31              171 ( 4)  INS
+FB47-31              172 ( 4)  INS
+FB48-5F              173 ( 2)  CLRB
+FB49-36              174 ( 4)  PSHA
+FB4A-9B 03           175 ( 3)  ADDA TMP1AND1 ADD CHAR*2 TO ORG
+FB4C-D9 02           176 ( 3)  ADCB TMP1 TO FORM TABLE INDEX
+FB4E-BD FE 29        177 ( 9)  JSR LOADX
+FB51-E6 06           178 ( 5)  LDAB 6,X GET REL TBL ENTRY
+FB53-A6 07           179 ( 5)  LDAA 7,X
+FB55-BD FE 29        180 ( 9)  JSR LOADX SAVE IN X
+FB58-                181      ;
+FB58-C1 00           182 ( 2)  CMPB =$FB SYSTEM CALL?
+FB5A-24 04           183 ( 4)  BCC RL15
+FB5C-9B 03           184 ( 3)  ADDA TMP1AND1 ADD ORIGIN TO FORM
+FB5E-D9 02           185 ( 3)  ADCB TMP1 ABSOLUTE JSR ADDR
+FB60-D7 02           186 ( 4) RL15 STAB TMP1
+FB62-97 03           187 ( 4)  STAA TMP1AND1
+FB64-32              188 ( 4)  PULA
+FB65-                189      ;
+FB65-D6 32           190 ( 3)  LDAB EDITF
+FB67-C1 00           191 ( 2)  CMPB =2
+FB69-26 0A           192 ( 4)  BNE RL20
+FB6B-                193      ; ESCAPE MODE - INPUTTING ARG
+FB6B-8C 00 00        194 ( 3)  CPX =DESBKS CMP REL ADDR
+FB6E-27 FF           195 ( 4)  BEQ 1+*
+FB70-                196      ; RET TO ESCAPE WITH ARG IN A
+FB70-                197      ; AND REL TABLE ENTRY IN X
+FB70-39              198 ( 5)  RTS
+FB71-8D 46           199 ( 8)  BSR ESCBKS BACKSPACE IN ARG
+FB73-20 B0           200 ( 4)  BRA RDLP
+FB75-                201      ;
+FB75-C6 00           202 ( 2) RL20 LDAB =$7E SET UP JUMP
+FB77-D7 01           203 ( 4)  STAB TMPAND1
+FB79-DE 1C           204 ( 4)  LDX CSRPTR
+FB7B-DF 18           205 ( 5)  STX CPSAVE SAVE ORIG CURSOR
+FB7D-9D 01           206 ( 0)  JSR TMPAND1 JSR SUB; CURSOR IN X
+FB7F-D6 32           207 ( 3)  LDAB EDITF
+FB81-C1 00           208 ( 2)  CMPB =2
+FB83-26 05           209 ( 4)  BNE RL30
+FB85-7A 00 32        210 ( 6)  DEC EDITF RETURN FROM ESCAPE
+FB88-20 AF           211 ( 4)  BRA RL10 GO EXEC COMMAND IN A
+FB8A-5D              212 ( 2) RL30 TSTB
+FB8B-27 00           213 ( 4)  BEQ 2+* EDIT OFF - EXIT
+FB8D-20 96           214 ( 4) RDLP1 BRA RDLP
+FB8F-39              215 ( 5) INVALD RTS
+FB90-                216      ;
+FB90-                217      ; PUT INT CR AT END OF LINE
+FB90-96 1D           218 ( 3) ENDCR LDAA CSRPAND1
+FB92-8A 00           219 ( 2)  ORAA =$1F
+FB94-D6 1C           220 ( 3)  LDAB CSRPTR
+FB96-BD FE 29        221 ( 9)  JSR LOADX SAVE END PTR IN TMP
+FB99-C6 00           222 ( 2)  LDAB =$60
+FB9B-E7 00           223 ( 6)  STAB 0,X
+FB9D-39              224 ( 5)  RTS
+FB9E-                225      ;
+FB9E-                226      ; REGULAR (NON-CTRL) CHAR
+FB9E-D6 10           227 ( 3) REGCHR LDAB INSFLG
+FBA0-36              228 ( 4)  PSHA
+FBA1-27 02           229 ( 4)  BEQ RC10
+FBA3-                230      ; INSERT MODE - MOVE CHARS OVER
+FBA3-8D 55           231 ( 8)  BSR INSCHR
+FBA5-8D E9           232 ( 8) RC10 BSR ENDCR GET PTR TO EOL
+FBA7-32              233 ( 4)  PULA
+FBA8-DE 1C           234 ( 4)  LDX CSRPTR
+FBAA-9C 00           235 ( 4)  CPX TMP
+FBAC-27 DF           236 ( 4)  BEQ RDLP1 CHAR NOT ALLOWED
+FBAE-36              237 ( 4)  PSHA
+FBAF-8D 6C           238 ( 8)  BSR FIXBLK FIXUP PREV CR'S
+FBB1-32              239 ( 4)  PULA
+FBB2-DE 1C           240 ( 4)  LDX CSRPTR
+FBB4-BD FC 8F        241 ( 9)  JSR EDTCHR PUT CHAR ON SCREEN
+FBB7-20 D4           242 ( 4)  BRA RDLP1
+FBB9-                243      ;
+FBB9-                244      ;
+FBB9-                245      ; BACKSPACE DURING ESCAPE MODE
+FBB9-8D 4C           246 ( 8) ESCBKS BSR BEGPT0
+FBBB-7C 00 01        247 ( 6)  INC TMPAND1 CAN'T BS OVER '?'
+FBBE-20 74           248 ( 4)  BRA DB10
+FBC0-                249      ;
+FBC0-                250      ; ESCAPE - GET NUMERIC OR
+FBC0-                251      ; STRING ARG (SEARCH ONLY)
+FBC0-96 10           252 ( 3) ESCAPE LDAA INSFLG
+FBC2-36              253 ( 4)  PSHA
+FBC3-7F 00 10        254 ( 6)  CLR INSFLG INSCHR OFF FOR ARG
+FBC6-BD FC 95        255 ( 9)  JSR INSTOP INSERT LINE FOR ARG
+FBC9-86 00           256 ( 2)  LDAA ='?'
+FBCB-BD FC BC        257 ( 9)  JSR PUTCHR
+FBCE-7C 00 32        258 ( 6)  INC EDITF =2
+FBD1-8D BA           259 ( 8)  BSR RDLP1 RECURSIVE CALL
+FBD3-33              260 ( 4)  PULB
+FBD4-D7 10           261 ( 4)  STAB INSFLG
+FBD6-36              262 ( 4)  PSHA
+FBD7-8C 00 00        263 ( 3)  CPX =SCHBCK CHK IF STR ARG
+FBDA-27 05           264 ( 4)  BEQ ES10
+FBDC-8C 00 00        265 ( 3)  CPX =SCHFWD
+FBDF-26 04           266 ( 4)  BNE ES15
+FBE1-8D 26           267 ( 8) ES10 BSR GETSTR
+FBE3-20 0A           268 ( 4)  BRA ES20
+FBE5-BD FC 37        269 ( 9) ES15 JSR UPHOME NUMERIC ARG
+FBE8-BD FF 2A        270 ( 9)  JSR ADCBIN CONV TO BIN
+FBEB-D7 04           271 ( 4)  STAB NUM AND SAVE
+FBED-97 05           272 ( 4)  STAA NUMAND1
+FBEF-BD FC A9        273 ( 9) ES20 JSR DELTOP REMOVE ARG LINE
+FBF2-32              274 ( 4)  PULA
+FBF3-DE 18           275 ( 4)  LDX CPSAVE
+FBF5-DF 1C           276 ( 5)  STX CSRPTR RESTORE CURSOR
+FBF7-39              277 ( 5) ES30 RTS
+FBF8-                278      ;
+FBF8-20 96           279 ( 4) ENDCR1 BRA ENDCR
+FBFA-                280      ;
+FBFA-                281      ; INSERT CHAR MOVE SUB
+FBFA-8D 94           282 ( 8) INSCHR BSR ENDCR GET END PTR
+FBFC-9C 1C           283 ( 4) IC10 CPX CSRPTR
+FBFE-27 F7           284 ( 4)  BEQ ES30
+FC00-09              285 ( 4)  DEX
+FC01-A6 00           286 ( 5)  LDAA 0,X MOVE CHARS OVER
+FC03-A7 01           287 ( 6)  STAA 1,X
+FC05-20 F5           288 ( 4)  BRA IC10
+FC07-                289      ;
+FC07-20 4C           290 ( 4) BEGPT0 BRA BEGPTR
+FC09-                291      ;
+FC09-                292      ; GET STRING ARG INTO BUFFER
+FC09-8C 00 00        293 ( 3) GETSTR CPX =$E001 NO STR?
+FC0C-27 0E           294 ( 4)  BEQ GS10
+FC0E-CE 00 00        295 ( 3)  LDX =SRCHBF STR BUFFER
+FC11-DF 16           296 ( 5)  STX DSTADR
+FC13-BD FC 37        297 ( 9)  JSR UPHOME
+FC16-BD FD 35        298 ( 9)  JSR MOVE1A MOVE STRING
+FC19-09              299 ( 4)  DEX
+FC1A-6F 00           300 ( 7)  CLR 0,X END OF STR PTR
+FC1C-39              301 ( 5) GS10 RTS
+FC1D-                302      ;
+FC1D-                303      ; CHANGE CR'S LEFT OF CURSOR
+FC1D-                304      ; INTO SPACES SO CHAR ISN'T
+FC1D-                305      ; LOST WHEN SCREEN SCROLLED
+FC1D-8D 36           306 ( 8) FIXBLK BSR BEGPTR
+FC1F-DE 1C           307 ( 4)  LDX CSRPTR
+FC21-A6 00           308 ( 5) FB10 LDAA 0,X
+FC23-81 00           309 ( 2)  CMPA =$60
+FC25-26 04           310 ( 4)  BNE FB20
+FC27-86 00           311 ( 2)  LDAA =' '
+FC29-A7 00           312 ( 6)  STAA 0,X
+FC2B-9C 00           313 ( 4) FB20 CPX TMP
+FC2D-27 16           314 ( 4)  BEQ DB20
+FC2F-09              315 ( 4)  DEX
+FC30-20 EF           316 ( 4)  BRA FB10
+FC32-                317      ;
+FC32-                318      ; DESTRUCTIVE BACKSPACE
+FC32-8D 21           319 ( 8) DESBKS BSR BEGPTR
+FC34-DE 1C           320 ( 4) DB10 LDX CSRPTR
+FC36-9C 00           321 ( 4)  CPX TMP
+FC38-27 0B           322 ( 4)  BEQ DB20
+FC3A-09              323 ( 4)  DEX
+FC3B-DF 1C           324 ( 5)  STX CSRPTR NEW CURSOR POSITION
+FC3D-96 10           325 ( 3)  LDAA INSFLG
+FC3F-                326      ; IN INS MODE, ALL CHARS <-
+FC3F-26 05           327 ( 4)  BNE GOBBLE
+FC41-86 00           328 ( 2)  LDAA =' '
+FC43-A7 01           329 ( 6)  STAA 1,X
+FC45-39              330 ( 5) DB20 RTS
+FC46-                331      ;
+FC46-                332      ; MOVE CHARS TO RIGHT OF CURSOR
+FC46-                333      ; LEFT ONE POS
+FC46-8D B0           334 ( 8) GOBBLE BSR ENDCR1
+FC48-DE 1C           335 ( 4)  LDX CSRPTR
+FC4A-9C 00           336 ( 4) GB10 CPX TMP
+FC4C-27 F7           337 ( 4)  BEQ DB20
+FC4E-A6 01           338 ( 5)  LDAA 1,X
+FC50-A7 00           339 ( 6)  STAA 0,X
+FC52-08              340 ( 4)  INX
+FC53-20 F5           341 ( 4)  BRA GB10
+FC55-                342      ;
+FC55-                343      ; GET PTR TO BEG OF LINE
+FC55-96 1D           344 ( 3) BEGPTR LDAA CSRPAND1
+FC57-84 00           345 ( 2)  ANDA =$E0
+FC59-D6 1C           346 ( 3)  LDAB CSRPTR
+FC5B-7E FE 29        347 ( 3)  JMP LOADX SAVE PTR IN TMP
+FC5E-                348      ;
+FC5E-                349      ; MOVE UP ONE PAGE (TOWARD TOP
+FC5E-                350      ; OF FILE)
+FC5E-8D 0A           351 ( 8) UPPAGE BSR GETPAG
+FC60-8D 5D           352 ( 8)  BSR UPINBA
+FC62-1B              353 ( 2) UPP10 ABA
+FC63-26 02           354 ( 4)  BNE 4+*
+FC65-DE 18           355 ( 4)  LDX CPSAVE RES CURSOR
+FC67-DF 1C           356 ( 5)  STX CSRPTR
+FC69-39              357 ( 5)  RTS
+FC6A-                358      ;
+FC6A-                359      ;
+FC6A-DE 04           360 ( 4) GETPAG LDX NUM
+FC6C-26 04           361 ( 4)  BNE GP10
+FC6E-5F              362 ( 2)  CLRB
+FC6F-86 00           363 ( 2)  LDAA =8 <ESC> ONLY, HALF PAGE
+FC71-39              364 ( 5)  RTS
+FC72-CE 00 00        365 ( 3) GP10 LDX =16
+FC75-DF 06           366 ( 5)  STX ARA
+FC77-D6 04           367 ( 3)  LDAB NUM
+FC79-96 05           368 ( 3)  LDAA NUMAND1
+FC7B-                369      ; # OF LINES = 16*NUM
+FC7B-7E FF 93        370 ( 3)  JMP MULT
+FC7E-                371      ;
+FC7E-                372      ; MOVE DOWN ONE PAGE (TOWARD
+FC7E-                373      ; BOTTOM OF FILE)
+FC7E-8D EA           374 ( 8) DNPAGE BSR GETPAG
+FC80-8D 55           375 ( 8)  BSR DNINBA
+FC82-20 DE           376 ( 4)  BRA UPP10
+FC84-                377      ;
+FC84-                378      ; GET LOWER ORDER BYTE OF ARG
+FC84-5F              379 ( 2) GETNUM CLRB
+FC85-96 04           380 ( 3)  LDAA NUM
+FC87-27 01           381 ( 4)  BEQ 3+*
+FC89-86 00           382 ( 2)  LDAA =$FF IF >255; CHG TO 255
+FC8B-39              383 ( 5)  RTS
+FC8C-96 05           384 ( 3)  LDAA NUMAND1
+FC8E-26 FF           385 ( 4)  BNE 1+*
+FC90-                386      ; CHANGE DEFAULT (0) TO 1
+FC90-4C              387 ( 2)  INCA
+FC91-39              388 ( 5)  RTS
+FC92-                389      ;
+FC92-20 C1           390 ( 4) BEGPT1 BRA BEGPTR
+FC94-                391      ;
+FC94-                392      ; VERTICAL TAB DOWN
+FC94-D6 1C           393 ( 3) TABDWN LDAB CSRPTR
+FC96-C1 00           394 ( 2)  CMPB =$E1 MID OF SCREEN?
+FC98-2D 08           395 ( 4)  BLT TD10
+FC9A-C6 00           396 ( 2)  LDAB =$E1
+FC9C-96 1D           397 ( 3)  LDAA CSRPAND1
+FC9E-8A 00           398 ( 2)  ORAA =$E0 LAST LINE
+FCA0-20 06           399 ( 4)  BRA TD30
+FCA2-C6 00           400 ( 2) TD10 LDAB =$E1 MIDDLE LINE
+FCA4-96 1D           401 ( 3) TD20 LDAA CSRPAND1
+FCA6-84 00           402 ( 2)  ANDA =$1F KEEP HORIZ POS
+FCA8-D7 1C           403 ( 4) TD30 STAB CSRPTR
+FCAA-97 1D           404 ( 4)  STAA CSRPAND1
+FCAC-39              405 ( 5)  RTS
+FCAD-                406      ;
+FCAD-                407      ; VERTICAL TAB UP
+FCAD-D6 1C           408 ( 3) TABUPX LDAB CSRPTR
+FCAF-96 1D           409 ( 3)  LDAA CSRPAND1
+FCB1-84 00           410 ( 2)  ANDA =$E0 LEFT JUSTIFY
+FCB3-80 00           411 ( 2)  SUBA =1
+FCB5-C2 00           412 ( 2)  SBCB =0
+FCB7-C1 00           413 ( 2)  CMPB =$E1 MID OF SCREEN?
+FCB9-2C E7           414 ( 4)  BGE TD10
+FCBB-C6 00           415 ( 2)  LDAB =$E0 FIRST LINE
+FCBD-20 E5           416 ( 4)  BRA TD20
+FCBF-                417      ;
+FCBF-                418      ;
+FCBF-                419      ; MOVE UP FOR NUMBER OF
+FCBF-                420      ; LINES SPECIFIED IN BA
+FCBF-BD FC 37        421 ( 9) UPINBA JSR UPHOME
+FCC2-DE 20           422 ( 4) UP10 LDX BUFFLO CHK IF AT TOP
+FCC4-9C 0C           423 ( 4)  CPX BUFADR
+FCC6-27 0E           424 ( 4)  BEQ UP20
+FCC8-37              425 ( 4)  PSHB
+FCC9-BD FC CB        426 ( 9)  JSR SUB32X
+FCCC-33              427 ( 4)  PULB
+FCCD-80 00           428 ( 2)  SUBA =1
+FCCF-C2 00           429 ( 2)  SBCB =0
+FCD1-26 EF           430 ( 4)  BNE UP10
+FCD3-4D              431 ( 2)  TSTA
+FCD4-26 EC           432 ( 4)  BNE UP10
+FCD6-39              433 ( 5) UP20 RTS
+FCD7-                434      ;
+FCD7-                435      ; MOVE DOWN FOR NUMBER OF
+FCD7-                436      ; LINES SPECIFIED IN BA
+FCD7-CE 00 00        437 ( 3) DNINBA LDX =$E1E0
+FCDA-DF 1C           438 ( 5)  STX CSRPTR
+FCDC-DE 22           439 ( 4) DN10 LDX BUFFHI CHK IF BOTTOM
+FCDE-9C 0E           440 ( 4)  CPX BUFEND
+FCE0-27 10           441 ( 4)  BEQ DN20
+FCE2-37              442 ( 4)  PSHB
+FCE3-DE 1C           443 ( 4)  LDX CSRPTR
+FCE5-BD FC D5        444 ( 9)  JSR ADD32X
+FCE8-33              445 ( 4)  PULB
+FCE9-80 00           446 ( 2)  SUBA =1
+FCEB-C2 00           447 ( 2)  SBCB =0
+FCED-26 ED           448 ( 4)  BNE DN10
+FCEF-4D              449 ( 2)  TSTA
+FCF0-26 EA           450 ( 4)  BNE DN10
+FCF2-39              451 ( 5) DN20 RTS
+FCF3-                452      ;
+FCF3-20 8F           453 ( 4) GETNM1 BRA GETNUM
+FCF5-                454      ;
+FCF5-                455      ; CLEAR LINE FROM CURSOR TO
+FCF5-                456      ; END OF LINE
+FCF5-96 1D           457 ( 3) CLEARL LDAA CSRPAND1
+FCF7-8A 00           458 ( 2)  ORAA =$1F
+FCF9-D6 1C           459 ( 3)  LDAB CSRPTR
+FCFB-BD FE 29        460 ( 9)  JSR LOADX
+FCFE-C6 00           461 ( 2)  LDAB =$60
+FD00-7E FC 43        462 ( 3)  JMP CLEAR2
+FD03-                463      ;
+FD03-                464      ; SET UP TO APPEND TO EOL
+FD03-8D 08           465 ( 8) APPEND BSR FNDEND
+FD05-81 00           466 ( 2)  CMPA =$60
+FD07-27 FF           467 ( 4)  BEQ 1+*
+FD09-08              468 ( 4)  INX
+FD0A-DF 1C           469 ( 5)  STX CSRPTR
+FD0C-39              470 ( 5)  RTS
+FD0D-                471      ;
+FD0D-                472      ; FIND LAST CHAR IN LINE
+FD0D-8D 83           473 ( 8) FNDEND BSR BEGPT1
+FD0F-DF 04           474 ( 5)  STX NUM
+FD11-8A 00           475 ( 2)  ORAA =$1F
+FD13-BD FE 29        476 ( 9)  JSR LOADX
+FD16-08              477 ( 4)  INX
+FD17-09              478 ( 4) FE10 DEX
+FD18-A6 00           479 ( 5)  LDAA 0,X
+FD1A-81 00           480 ( 2)  CMPA =$60
+FD1C-26 04           481 ( 4)  BNE FE20
+FD1E-9C 04           482 ( 4)  CPX NUM
+FD20-26 F5           483 ( 4)  BNE FE10
+FD22-39              484 ( 5) FE20 RTS
+FD23-                485      ;
+FD23-20 9A           486 ( 4) UPBA1 BRA UPINBA
+FD25-                487      ;
+FD25-                488      ; DELETE BLANKS LINES (IF ANY)
+FD25-8D E6           489 ( 8) CLOSET BSR FNDEND
+FD27-81 00           490 ( 2)  CMPA =$60 EMPTY LINE
+FD29-26 08           491 ( 4)  BNE CL10
+FD2B-8D 0F           492 ( 8)  BSR DELCUR
+FD2D-DE 22           493 ( 4)  LDX BUFFHI CHK END OF FILE
+FD2F-9C 0E           494 ( 4)  CPX BUFEND
+FD31-26 F2           495 ( 4)  BNE CLOSET
+FD33-39              496 ( 5) CL10 RTS
+FD34-                497      ;
+FD34-                498      ; DELETE N LINES
+FD34-8D BD           499 ( 8) DELETE BSR GETNM1
+FD36-8D 04           500 ( 8) DL10 BSR DELCUR
+FD38-4A              501 ( 2)  DECA
+FD39-26 FB           502 ( 4)  BNE DL10
+FD3B-39              503 ( 5)  RTS
+FD3C-                504      ;
+FD3C-                505      ; DELETE CURRENT LINE
+FD3C-BD FC FD        506 ( 9) DELCUR JSR LFTJST
+FD3F-DE 1C           507 ( 4)  LDX CSRPTR
+FD41-BD FD 67        508 ( 9)  JSR SCRP2 SCROLL SCREEN UP
+FD44-BD FC ED        509 ( 9)  JSR OVR3 MOVE CHARS TO LAST
+FD47-DE 18           510 ( 4)  LDX CPSAVE
+FD49-DF 1C           511 ( 5)  STX CSRPTR RESTORE CURSOR
+FD4B-7E FC FD        512 ( 3)  JMP LFTJST TO LEFT OF LINE
+FD4E-                513      ;
+FD4E-20 87           514 ( 4) DNBA1 BRA DNINBA
+FD50-                515      ;
+FD50-                516      ; INSERT N BLANK LINES BEFORE
+FD50-                517      ; CURRENT LINE
+FD50-8D A1           518 ( 8) INSERT BSR GETNM1
+FD52-BD FC FD        519 ( 9)  JSR LFTJST
+FD55-36              520 ( 4) IN10 PSHA
+FD56-BD FD 46        521 ( 9)  JSR MOVE2 MOVE LAST OFF SCREEN
+FD59-CE 00 00        522 ( 3)  LDX =$E1E0
+FD5C-9C 1C           523 ( 4) IN20 CPX CSRPTR
+FD5E-27 07           524 ( 4)  BEQ IN30
+FD60-09              525 ( 4)  DEX
+FD61-E6 00           526 ( 5)  LDAB 0,X MOVE LINES DOWN
+FD63-E7 20           527 ( 6)  STAB 32,X
+FD65-20 F5           528 ( 4)  BRA IN20
+FD67-8D 8C           529 ( 8) IN30 BSR CLEARL CLEAR CUR LINE
+FD69-32              530 ( 4)  PULA
+FD6A-4A              531 ( 2)  DECA
+FD6B-26 E8           532 ( 4)  BNE IN10
+FD6D-39              533 ( 5)  RTS
+FD6E-                534      ;
+FD6E-                535      ; MOVE CURRENT LINE TO TOP
+FD6E-BD FC FD        536 ( 9) HOMLIN JSR LFTJST
+FD71-D6 1C           537 ( 3)  LDAB CSRPTR
+FD73-96 1D           538 ( 3)  LDAA CSRPAND1
+FD75-54              539 ( 2)  LSRB
+FD76-46              540 ( 2)  RORA
+FD77-44              541 ( 2)  LSRA
+FD78-44              542 ( 2)  LSRA
+FD79-44              543 ( 2)  LSRA
+FD7A-44              544 ( 2)  LSRA
+FD7B-27 08           545 ( 4) HL05 BEQ HL10
+FD7D-8D 10           546 ( 8)  BSR BTHOME
+FD7F-BD FC D5        547 ( 9)  JSR ADD32X
+FD82-4A              548 ( 2)  DECA
+FD83-20 F6           549 ( 4)  BRA HL05
+FD85-BD FC 37        550 ( 9) HL10 JSR UPHOME
+FD88-96 19           551 ( 3)  LDAA CPSVAND1
+FD8A-84 00           552 ( 2)  ANDA =$1F
+FD8C-97 1D           553 ( 4)  STAA CSRPAND1 RES ORIG HORIZ POS
+FD8E-39              554 ( 5)  RTS
+FD8F-                555      ;
+FD8F-                556      ; HOME AT BOTTOM
+FD8F-CE 00 00        557 ( 3) BTHOME LDX =$E1E0
+FD92-DF 1C           558 ( 5)  STX CSRPTR
+FD94-39              559 ( 5)  RTS
+FD95-                560      ;
+FD95-                561      ; GOTO TOP OF FILE
+FD95-5F              562 ( 2) TOP CLRB
+FD96-4F              563 ( 2)  CLRA
+FD97-20 8A           564 ( 4) UPBA2 BRA UPBA1
+FD99-20 B3           565 ( 4) DNBA2 BRA DNBA1
+FD9B-                566      ;
+FD9B-                567      ; GOTO BOTTOM & EXIT
+FD9B-8D 04           568 ( 8) BOTOUT BSR BOTTOM
+FD9D-7F 00 32        569 ( 6)  CLR EDITF
+FDA0-39              570 ( 5)  RTS
+FDA1-                571      ;
+FDA1-                572      ; GOTO BOTTOM OF FILE
+FDA1-5F              573 ( 2) BOTTOM CLRB
+FDA2-4F              574 ( 2)  CLRA
+FDA3-8D F4           575 ( 8)  BSR DNBA2 MOVE OUT OF HIGH BUF
+FDA5-                576      ; SCROLL UP TILL SCREEN CLEAR
+FDA5-BD FC 37        577 ( 9) BT10 JSR UPHOME
+FDA8-86 00           578 ( 2)  LDAA =$60
+FDAA-CE 00 00        579 ( 3)  LDX =$E200
+FDAD-09              580 ( 4) BT20 DEX
+FDAE-A1 00           581 ( 5)  CMPA 0,X
+FDB0-26 05           582 ( 4)  BNE BT30 NOT DONE YET
+FDB2-9C 1C           583 ( 4)  CPX CSRPTR
+FDB4-26 F7           584 ( 4)  BNE BT20
+FDB6-39              585 ( 5)  RTS
+FDB7-8D D6           586 ( 8) BT30 BSR BTHOME
+FDB9-BD FC D5        587 ( 9)  JSR ADD32X SCROLL UP
+FDBC-20 E7           588 ( 4)  BRA BT10
+FDBE-                589      ;
+FDBE-20 AE           590 ( 4) HOML1 BRA HOMLIN
+FDC0-20 DF           591 ( 4) BOTTM1 BRA BOTTOM
+FDC2-                592      ;
+FDC2-                593      ; GOTO LINE (ARG)
+FDC2-DE 04           594 ( 4) GOTONN LDX NUM
+FDC4-27 CF           595 ( 4)  BEQ TOP
+FDC6-09              596 ( 4)  DEX
+FDC7-27 CC           597 ( 4)  BEQ TOP =1, LINE 1
+FDC9-86 00           598 ( 2)  LDAA =1
+FDCB-97 06           599 ( 4)  STAA NFOUND INIT NOT FOUND
+FDCD-CE 00 00        600 ( 3)  LDX =0
+FDD0-DF 02           601 ( 5)  STX TMP1 INIT LINE CTR
+FDD2-                602      ;
+FDD2-DE 0C           603 ( 4)  LDX BUFADR
+FDD4-                604      ; LOOK FOR LINE IN LOW BUFFER
+FDD4-9C 20           605 ( 4) GT10 CPX BUFFLO
+FDD6-27 0B           606 ( 4)  BEQ GT20
+FDD8-A6 00           607 ( 5)  LDAA 0,X
+FDDA-08              608 ( 4)  INX
+FDDB-81 00           609 ( 2)  CMPA =$60
+FDDD-26 F5           610 ( 4)  BNE GT10
+FDDF-8D 50           611 ( 8)  BSR CHKNUM CHECK IF FOUND
+FDE1-20 F1           612 ( 4)  BRA GT10
+FDE3-                613      ;
+FDE3-96 06           614 ( 3) GT20 LDAA NFOUND
+FDE5-26 10           615 ( 4)  BNE GOTOSC
+FDE7-D6 02           616 ( 3)  LDAB TMP1 FOUND TARGET LINE
+FDE9-96 03           617 ( 3)  LDAA TMP1AND1
+FDEB-8B 00           618 ( 2)  ADDA =1
+FDED-C9 00           619 ( 2)  ADCB =0
+FDEF-90 05           620 ( 3)  SUBA NUMAND1
+FDF1-D2 04           621 ( 3)  SBCB NUM
+FDF3-20 A2           622 ( 4) UPBA3 BRA UPBA2 MOVE UP IN FILE
+FDF5-20 A2           623 ( 4) DNBA3 BRA DNBA2 MOVE DOWN
+FDF7-                624      ;
+FDF7-                625      ; LOOK FOR LINE ON SCREEN
+FDF7-BD FC 37        626 ( 9) GOTOSC JSR UPHOME
+FDFA-DE 1C           627 ( 4) GT30 LDX CSRPTR
+FDFC-8C 00 00        628 ( 3) GT40 CPX =$E200
+FDFF-27 19           629 ( 4)  BEQ GT50
+FE01-A6 00           630 ( 5)  LDAA 0,X
+FE03-08              631 ( 4)  INX
+FE04-81 00           632 ( 2)  CMPA =$60
+FE06-26 F4           633 ( 4)  BNE GT40
+FE08-8D 27           634 ( 8)  BSR CHKNUM CHK IF FOUND
+FE0A-96 06           635 ( 3)  LDAA NFOUND
+FE0C-27 0C           636 ( 4)  BEQ GT50
+FE0E-DE 1C           637 ( 4)  LDX CSRPTR
+FE10-8C 00 00        638 ( 3)  CPX =$E1E0 IF NOT AT BOTTOM
+FE13-27 05           639 ( 4)  BEQ GT50 MOVE CURSOR DOWN
+FE15-BD FD 14        640 ( 9)  JSR CRLFXX
+FE18-20 E0           641 ( 4)  BRA GT30
+FE1A-                642      ;
+FE1A-96 06           643 ( 3) GT50 LDAA NFOUND
+FE1C-26 02           644 ( 4)  BNE GT60
+FE1E-20 9E           645 ( 4)  BRA HOML1 LINE ON SCREEN
+FE20-                646      ; LINE MUST BE IN HIGH BUF
+FE20-D6 04           647 ( 3) GT60 LDAB NUM
+FE22-96 05           648 ( 3)  LDAA NUMAND1
+FE24-90 03           649 ( 3)  SUBA TMP1AND1
+FE26-D2 02           650 ( 3)  SBCB TMP1
+FE28-8D CB           651 ( 8)  BSR DNBA3 GOTO TO IT
+FE2A-1B              652 ( 2)  ABA
+FE2B-27 00           653 ( 4)  BEQ 2+* RUN INTO END?
+FE2D-20 91           654 ( 4)  BRA BOTTM1
+FE2F-20 8D           655 ( 4) HOML2 BRA HOML1
+FE31-                656      ;
+FE31-DF 00           657 ( 5) CHKNUM STX TMP SAVE BUF ADDR
+FE33-DE 02           658 ( 4)  LDX TMP1 GET LINE CTR
+FE35-08              659 ( 4)  INX
+FE36-DF 02           660 ( 5)  STX TMP1 SAVE INCR CTR
+FE38-9C 04           661 ( 4)  CPX NUM COMPARE WITH TARGET
+FE3A-26 01           662 ( 4)  BNE 3+*
+FE3C-7F 00 06        663 ( 6)  CLR NFOUND FOUND IT
+FE3F-DE 00           664 ( 4)  LDX TMP
+FE41-39              665 ( 5)  RTS
+FE42-                666      ;
+FE42-                667      ; SEARCH BACKWARD FOR STRING
+FE42-                668      ; IN LOW BUF
+FE42-CE 00 00        669 ( 3) SCHBCK LDX =0 INIT LINE CTR
+FE45-DF 02           670 ( 5)  STX TMP1
+FE47-DE 20           671 ( 4)  LDX BUFFLO
+FE49-9C 0C           672 ( 4) SB10 CPX BUFADR
+FE4B-26 FF           673 ( 4)  BNE 1+*
+FE4D-39              674 ( 5)  RTS
+FE4E-09              675 ( 4)  DEX
+FE4F-A6 00           676 ( 5)  LDAA 0,X
+FE51-81 00           677 ( 2)  CMPA =$60
+FE53-26 02           678 ( 4)  BNE 4+*
+FE55-8D DA           679 ( 8)  BSR CHKNUM INC LINE CTR
+FE57-20 F0           680 ( 4)  BRA SB10
+FE59-B1 01 10        681 ( 4)  CMPA SRCHBF CHAR MATCH?
+FE5C-26 EB           682 ( 4)  BNE SB10
+FE5E-8D 6E           683 ( 8)  BSR CMPSTR STRING MATCH?
+FE60-26 E7           684 ( 4)  BNE SB10
+FE62-D6 02           685 ( 3)  LDAB TMP1 YES
+FE64-96 03           686 ( 3)  LDAA TMP1AND1
+FE66-8D 8B           687 ( 8)  BSR UPBA3
+FE68-20 52           688 ( 4)  BRA HOMSTR
+FE6A-                689      ;
+FE6A-20 89           690 ( 4) DNBA4 BRA DNBA3
+FE6C-                691      ;
+FE6C-                692      ; SEARCH FORWARD FOR STRING,
+FE6C-                693      ; FIRST ON SCREEN
+FE6C-CE 00 00        694 ( 3) SCHFWD LDX =$E020 BEG 2ND LINE
+FE6F-8C 00 00        695 ( 3) SF10 CPX =$E200 END OF SCREEN
+FE72-27 20           696 ( 4)  BEQ SF25 GO CHECK HIGH BUF
+FE74-A6 00           697 ( 5)  LDAA 0,X
+FE76-81 00           698 ( 2)  CMPA =$60
+FE78-26 0D           699 ( 4)  BNE SF20
+FE7A-DF 00           700 ( 5)  STX TMP
+FE7C-96 01           701 ( 3)  LDAA TMPAND1
+FE7E-8A 00           702 ( 2)  ORAA =$1F END OF LINE
+FE80-97 01           703 ( 4)  STAA TMPAND1
+FE82-DE 00           704 ( 4)  LDX TMP
+FE84-08              705 ( 4) SF15 INX
+FE85-20 E8           706 ( 4)  BRA SF10
+FE87-B1 01 10        707 ( 4) SF20 CMPA SRCHBF CHAR MATCH?
+FE8A-26 F8           708 ( 4)  BNE SF15
+FE8C-8D 40           709 ( 8)  BSR CMPSTR STRING MATCH?
+FE8E-26 F4           710 ( 4)  BNE SF15
+FE90-DF 1C           711 ( 5)  STX CSRPTR YES
+FE92-20 9B           712 ( 4) HOML3 BRA HOML2 LINE TO TOP
+FE94-                713      ;
+FE94-                714      ; SEARCH IN HIGH BUF
+FE94-CE 00 00        715 ( 3) SF25 LDX =1
+FE97-DF 02           716 ( 5)  STX TMP1
+FE99-DE 22           717 ( 4)  LDX BUFFHI
+FE9B-9C 0E           718 ( 4) SF30 CPX BUFEND
+FE9D-26 FF           719 ( 4)  BNE 1+*
+FE9F-39              720 ( 5)  RTS
+FEA0-08              721 ( 4)  INX
+FEA1-A6 00           722 ( 5)  LDAA 0,X
+FEA3-81 00           723 ( 2)  CMPA =$60
+FEA5-26 02           724 ( 4)  BNE 4+*
+FEA7-8D 88           725 ( 8)  BSR CHKNUM INC LINE CTR
+FEA9-20 F0           726 ( 4)  BRA SF30
+FEAB-B1 01 10        727 ( 4)  CMPA SRCHBF CHAR MATCH?
+FEAE-26 EB           728 ( 4)  BNE SF30
+FEB0-8D 1C           729 ( 8)  BSR CMPSTR STRING MATCH?
+FEB2-26 E7           730 ( 4)  BNE SF30
+FEB4-D6 02           731 ( 3)  LDAB TMP1 YES
+FEB6-96 03           732 ( 3)  LDAA TMP1AND1
+FEB8-8D B0           733 ( 8)  BSR DNBA4 MOVE TO LINE
+FEBA-8D D6           734 ( 8)  BSR HOML3
+FEBC-                735      ;
+FEBC-                736      ; MOVE CURSOR TO BEG OF STR
+FEBC-CE 00 00        737 ( 3) HOMSTR LDX =$DFFF
+FEBF-08              738 ( 4) HS10 INX
+FEC0-A6 00           739 ( 5)  LDAA 0,X
+FEC2-B1 01 10        740 ( 4)  CMPA SRCHBF
+FEC5-26 F8           741 ( 4)  BNE HS10
+FEC7-8D 05           742 ( 8)  BSR CMPSTR
+FEC9-26 F4           743 ( 4)  BNE HS10
+FECB-DF 1C           744 ( 5)  STX CSRPTR SAVE BEG OF STRING
+FECD-39              745 ( 5)  RTS
+FECE-                746      ;
+FECE-                747      ; COMPARE STR (X) WITH STR BUF
+FECE-DF 18           748 ( 5) CMPSTR STX CPSAVE TMP SAVE
+FED0-DF 00           749 ( 5)  STX TMP EDIT BUF PTR
+FED2-CE 00 00        750 ( 3)  LDX =SRCHBF
+FED5-DF 04           751 ( 5) CS10 STX NUM STR BUF PTR
+FED7-DE 00           752 ( 4)  LDX TMP
+FED9-08              753 ( 4)  INX
+FEDA-DF 00           754 ( 5)  STX TMP
+FEDC-A6 00           755 ( 5)  LDAA 0,X EDIT BUF CHAR
+FEDE-DE 04           756 ( 4)  LDX NUM
+FEE0-08              757 ( 4)  INX
+FEE1-E6 00           758 ( 5)  LDAB 0,X STR BUF CHAR
+FEE3-11              759 ( 2)  CBA
+FEE4-27 EF           760 ( 4)  BEQ CS10
+FEE6-DE 18           761 ( 4)  LDX CPSAVE RES ORIG PTR
+FEE8-                762      ; IF STRINGS =, ACCB = 0 (END)
+FEE8-5D              763 ( 2)  TSTB
+FEE9-39              764 ( 5)  RTS
+FEEA-                765      ;
+FEEA-                766      ; HORIZ TAB RIGHT
+FEEA-8D 20           767 ( 8) TABRGT BSR GETTAB GET LAST TAB
+FEEC-9B 13           768 ( 3)  ADDA TAB NEXT TAB TO RIGHT
+FEEE-81 00           769 ( 2)  CMPA =31
+FEF0-2F 00           770 ( 4)  BLE 2+*
+FEF2-86 00           771 ( 2)  LDAA =31
+FEF4-D6 1D           772 ( 3) TB10 LDAB CSRPAND1
+FEF6-C4 00           773 ( 2)  ANDB =$E0
+FEF8-1B              774 ( 2)  ABA
+FEF9-97 1D           775 ( 4)  STAA CSRPAND1
+FEFB-39              776 ( 5)  RTS
+FEFC-                777      ;
+FEFC-                778      ; HORIZ TAB LEFT
+FEFC-8D 0E           779 ( 8) TABLFT BSR GETTAB GET TAB POS
+FEFE-D6 1D           780 ( 3)  LDAB CSRPAND1
+FF00-C4 00           781 ( 2)  ANDB =$1F
+FF02-11              782 ( 2)  CBA
+FF03-26 03           783 ( 4)  BNE 5+*
+FF05-90 13           784 ( 3)  SUBA TAB ON TAB; MOVE LEFT
+FF07-2C FF           785 ( 4)  BGE 1+*
+FF09-4F              786 ( 2)  CLRA
+FF0A-20 E8           787 ( 4)  BRA TB10
+FF0C-                788      ;
+FF0C-                789      ; LAST TAB POSITION =
+FF0C-                790      ; (CURSOR / TAB) * TAB
+FF0C-7F 00 06        791 ( 6) GETTAB CLR ARA
+FF0F-96 13           792 ( 3)  LDAA TAB
+FF11-97 07           793 ( 4)  STAA AR0
+FF13-96 1D           794 ( 3)  LDAA CSRPAND1
+FF15-84 00           795 ( 2)  ANDA =$1F
+FF17-5F              796 ( 2)  CLRB
+FF18-BD FF AF        797 ( 9)  JSR DIVIDE
+FF1B-D6 13           798 ( 3)  LDAB TAB
+FF1D-D7 07           799 ( 4)  STAB AR0
+FF1F-7E FF 93        800 ( 3)  JMP MULT
+FF22-                801      ;
+FF22-96 05           802 ( 3) SETTAB LDAA NUMAND1
+FF24-81 00           803 ( 2)  CMPA =2
+FF26-2C 00           804 ( 4)  BGE 2+*
+FF28-86 00           805 ( 2)  LDAA =8
+FF2A-97 13           806 ( 4)  STAA TAB
+FF2C-39              807 ( 5)  RTS
+FF2D-                808      ;
+FF2D-                809      ; TURN ON CHAR INSERT
+FF2D-86 00           810 ( 2) CHRINS LDAA =1
+FF2F-97 10           811 ( 4)  STAA INSFLG
+FF31-39              812 ( 5)  RTS
+FF32-                813      ;
+FF32-                814      ; TURN OFF CHAR INSERT
+FF32-7F 00 10        815 ( 6) INSOFF CLR INSFLG
+FF35-39              816 ( 5)  RTS
+FF36-                817      ;
+FF36-                818      ;
+FF36-                819      ;
+FF36-                820      ;
+FF36-                821      ;
+FF36-                822      ;
+FF36-                823      ;
+0110-                824      SRCHBF      .EQU    $110 STR ARG BUFFER
+FC37-                825      UPHOME      .EQU    $FC37
+FCFD-                826      LFTJST      .EQU    $FCFD
+FCA9-                827      DELTOP      .EQU    $FCA9
+FC43-                828      CLEAR2      .EQU    $FC43
+FC95-                829      INSTOP      .EQU    $FC95
+FCA5-                830      RTARRO      .EQU    $FCA5
+FCB3-                831      LFARRO      .EQU    $FCB3
+FCCB-                832      SUB32X      .EQU    $FCCB
+FCD5-                833      ADD32X      .EQU    $FCD5
+FC4A-                834      GETCHR      .EQU    $FC4A
+FC3D-                835      CLEAR       .EQU    $FC3D
+FC8F-                836      EDTCHR      .EQU    $FC8F
+FE29-                837      LOADX       .EQU    $FE29
+FF2A-                838      ADCBIN      .EQU    $FF2A
+FCBC-                839      PUTCHR      .EQU    $FCBC
+FD14-                840      CRLFXX      .EQU    $FD14
+FC64-                841      KBDPIA      .EQU    $FC64
+FF93-                842      MULT        .EQU    $FF93
+FFAF-                843      DIVIDE      .EQU    $FFAF
+FD67-                844      SCRP2       .EQU    $FD67
+FCED-                845      OVR3        .EQU    $FCED
+FD46-                846      MOVE2       .EQU    $FD46
+FD35-                847      MOVE1A      .EQU    $FD35
+FF36-                848      ; END ; NO END REQUIRED FOR SBASM3 ASSEMBLY
+FF36-                849
+
+0 Errors found during assembly.
+0 Warnings found during assembly.
+

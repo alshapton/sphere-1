@@ -1,0 +1,6 @@
+Can't use < and > globally because that would clash with forced zero/direct page addressing modes.
+
+With multiple instructions per line the parsing of the line is stopped when an error is
+encountered.
+
+Multiple Mnemonics can't be combined on one line
